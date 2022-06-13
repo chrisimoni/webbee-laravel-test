@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Event;
 use App\Models\Workshop;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
@@ -202,6 +202,29 @@ class EventsController extends BaseController
      */
 
     public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+        $arrayResult = [];
+        $events = Event::all();
+
+        if ($events) {
+            $num = 0;
+            foreach ($events as $key => $event) {
+                if ($this->getFutureWorkshop($event->id)) {
+                    $arrayResult[$num]['id'] = $event->id;
+                    $arrayResult[$num]['name'] = $event->name;
+                    $arrayResult[$num]['created_at'] = $event->created_at;
+                    $arrayResult[$num]['workshops'] = $this->getFutureWorkshop($event->id);
+                    $num += 1;
+                }
+            }
+        }
+        return $arrayResult;
+    }
+
+    protected function getFutureWorkshop($eventid)
+    {
+        $workShop = Workshop::where('event_id', $eventid)
+            ->where('start', '>',  Carbon::now()->format('Y-m-d H:i:s'))->get();
+
+        return json_decode($workShop, true);
     }
 }
