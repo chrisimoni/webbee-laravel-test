@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Routing\Controller as BaseController;
+use App\Models\Workshop;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EventsController extends BaseController
 {
@@ -101,7 +103,27 @@ class EventsController extends BaseController
      */
 
     public function getEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 1');
+        $arrayResult = [];
+        $events = Event::all();
+
+        if ($events) {
+            foreach ($events as $key => $event) {
+                if ($this->getWorkshop($event->id)) {
+                    $arrayResult[$key]['id'] = $event->id;
+                    $arrayResult[$key]['name'] = $event->name;
+                    $arrayResult[$key]['created_at'] = $event->created_at;
+                    $arrayResult[$key]['workshops'] = $this->getWorkshop($event->id);
+                }
+            }
+        }
+
+
+        return $arrayResult;
+    }
+
+       protected function getWorkshop($eventid)
+    {
+        return Workshop::where('event_id', $eventid)->get();
     }
 
 
