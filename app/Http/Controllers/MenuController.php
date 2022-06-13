@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MenuItem;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller as BaseController;
 
 class MenuController extends BaseController
@@ -95,6 +96,39 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        $menuItems = DB::table('menu_items')->select("*")->orderBY('id', 'ASC')->get();
+        $menuItemArray  = [];
+
+        foreach ($menuItems as $key => $items) {
+
+            $menuItemArray[$key]['id'] = $items->id;
+            $menuItemArray[$key]['name'] = $items->name;
+            $menuItemArray[$key]['url'] = $items->url;
+            $menuItemArray[$key]['created_at'] = $items->created_at;
+            $menuItemArray[$key]['updated_at'] = $items->updated_at;
+
+            $menuItemArray[$key]['children'] = $this->getChildren($items->id);
+        }
+
+        return $menuItemArray;
+
+    }
+
+    public function getChildren($id) {
+        $items = [];
+
+        if (isset($id)) {
+           $items = MenuItem::where('parent_id', $id)->get()->toArray();
+           if(empty($items)) return [];
+            foreach ($items as $key => $val) {
+              $items[$key]['children'] = [];
+              $subItems = MenuItem::where('parent_id', $val['id'])->get()->toArray();
+                if(!empty($subItems)){
+                    $items[$key]['children'] = $subItems;
+                }
+            }
+        }
+
+        return $items;
     }
 }
